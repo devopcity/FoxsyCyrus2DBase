@@ -107,7 +107,12 @@ OpponentPlayerTypeMessageParser::parse( const char * msg )
         }
         else
         {
-            int id = static_cast< int >( buf[i] ) - static_cast< int >( 'A' );
+            // FoxLeague: the coach encodes ids 0-25 as 'A'-'Z' and 26-35 as 'a'-'j', the
+            // only letters the server's say lexer lets through (sample_freeform_message.cpp).
+            const char c = buf[i];
+            int id = ( c >= 'a'
+                       ? 26 + static_cast< int >( c ) - static_cast< int >( 'a' )
+                       : static_cast< int >( c ) - static_cast< int >( 'A' ) );
             if ( id < 0 || player_types <= id )
             {
                 std::cerr << __FILE__ << ' ' << __LINE__

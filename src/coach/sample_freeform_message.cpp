@@ -122,7 +122,17 @@ OpponentPlayerTypeMessage::buildMessage()
         }
         else
         {
-            M_message += static_cast< char >( 'A' + id );
+            // FoxLeague: 36 hetero types (18 a side). The server's say lexer accepts only
+            // [0-9A-Za-z().+-*/?<>_ ] in a freeform string (rcssserver
+            // rcss/clang/coach_lang_tok.lpp:207), so 'A' + id breaks from id 26 on
+            // ('[', '\\', ']', '^', '`'): (error could_not_parse_say) in every match, and the
+            // left coach never told its players the opponent's types (the right side owns
+            // ids 18-35). Ids 0-25 stay 'A'-'Z', ids 26-35 become 'a'-'j'; the player
+            // parser (sample_freeform_message_parser.cpp) decodes the same alphabet.
+            const char c = ( id < 26
+                             ? static_cast< char >( 'A' + id )
+                             : static_cast< char >( 'a' + ( id - 26 ) ) );
+            M_message += c;
         }
     }
 }
