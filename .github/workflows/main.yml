@@ -16,6 +16,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    # The release step creates a tag and a release: the job's token needs write on contents
+    # (a new repository gives workflows read-only tokens by default).
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
