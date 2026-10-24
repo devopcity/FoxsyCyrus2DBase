@@ -595,9 +595,9 @@ SampleCoach::doSubstituteTiredPlayers()
           unum != tired_teammate_unum.end();
           ++unum )
     {
-        // FoxLeague: like for like. With positions configured, a tired player is
-        // replaced only by a bench card of his shirt's position (MID and FWD stand in
-        // for each other when no exact match is left; GK and DEF never), else he stays.
+        // FoxLeague: like for like (owner 2026-10-24: "post pe post"). With positions
+        // configured, a tired player is replaced only by a bench card of his shirt's
+        // exact position (GK, DEF, MID or FWD); with none left he stays on, tired.
         int type = Setting::i().shirt_positions.empty()
             ? getFastestType( candidates )
             : getFastestTypeForShirt( candidates, *unum );
@@ -680,32 +680,24 @@ SampleCoach::getFastestTypeForShirt( PlayerTypePtrCont & candidates,
         return Hetero_Unknown;
     }
     const std::string & shirt = Setting::i().shirt_positions[unum - 1];
-    const bool outfield = ( shirt == "MID" || shirt == "FWD" );
 
-    // pass 0: the exact position; pass 1 (MID/FWD shirts only): the other one.
-    for ( int pass = 0; pass < ( outfield ? 2 : 1 ); ++pass )
+    // The exact position only: no line stands in for another.
+    PlayerTypePtrCont matching;
+    for ( PlayerTypePtrCont::const_iterator it = candidates.begin();
+          it != candidates.end();
+          ++it )
     {
-        PlayerTypePtrCont matching;
-        for ( PlayerTypePtrCont::const_iterator it = candidates.begin();
-              it != candidates.end();
-              ++it )
+        if ( typePosition( (*it)->id() ) == shirt )
         {
-            const std::string pos = typePosition( (*it)->id() );
-            const bool ok = ( pass == 0
-                              ? pos == shirt
-                              : ( pos == "MID" || pos == "FWD" ) );
-            if ( ok )
-            {
-                matching.push_back( *it );
-            }
+            matching.push_back( *it );
         }
-        const int type = getFastestType( matching );
-        if ( type != Hetero_Unknown )
-        {
-            candidates.erase( std::find_if( candidates.begin(), candidates.end(),
-                                            [type]( const PlayerType * p ) { return p->id() == type; } ) );
-            return type;
-        }
+    }
+    const int type = getFastestType( matching );
+    if ( type != Hetero_Unknown )
+    {
+        candidates.erase( std::find_if( candidates.begin(), candidates.end(),
+                                        [type]( const PlayerType * p ) { return p->id() == type; } ) );
+        return type;
     }
     // Once per shirt: this runs at every stoppage while the player stays tired.
     static std::set< int > s_logged;
