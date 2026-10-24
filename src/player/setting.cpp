@@ -195,7 +195,11 @@ void Setting::load_from_json_string(const string &json_str, const string &encodi
                 type_positions.clear();
                 shirt_positions.clear();
             }
-            // check if json contains unsupported keys
+            // FoxLeague: an unknown key is logged and IGNORED, never a throw. The eleven
+            // players and the coach parse the same -j, so one throw ended every process of the
+            // team and the match was lost by forfeit; and a backend that learns a new key
+            // (like type_positions in #564) could only be switched on after every runner ran a
+            // coach that knew it. A bad value of a KNOWN key still fails loudly above.
             for (auto& el : j.items()) {
                 std::string key = el.key();
                 if (key != "version" && key != "formation_name" &&
@@ -215,8 +219,7 @@ void Setting::load_from_json_string(const string &json_str, const string &encodi
                     key != "player_type_ids" &&
                     key != "type_positions" &&
                     key != "shirt_positions") {
-                    log("Unsupported key in json: " + key + "\n");
-                    throw std::invalid_argument("Unsupported key in json: " + key);
+                    log("Unsupported key in json IGNORED: " + key + "\n");
                 }
             }
         }
