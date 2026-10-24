@@ -51,6 +51,13 @@ public:
 
     vector<int> player_type_ids;
 
+    // FoxLeague (like-for-like substitutions): the position of each of the side's 18
+    // cards (index = type id - min_type_id) and of each of the 11 shirts in the side's
+    // formation, "GK" / "DEF" / "MID" / "FWD". Both empty = the coach substitutes as
+    // before (fastest bench type, any shirt).
+    vector<string> type_positions;
+    vector<string> shirt_positions;
+
     void find_version(const string &json_string);
 
     void load_from_json_string(const string &json_string, const string &encoding = "json");

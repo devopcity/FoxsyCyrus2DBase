@@ -30,6 +30,7 @@
 #include <rcsc/coach/coach_agent.h>
 #include <rcsc/types.h>
 
+#include <string>
 #include <vector>
 
 
@@ -90,6 +91,11 @@ private:
                        const int type );
 
     int getFastestType( PlayerTypePtrCont & candidates );
+    // FoxLeague: the fastest candidate of the shirt's position, removed from
+    // `candidates`; Hetero_Unknown when none fits (see doSubstituteTiredPlayers).
+    int getFastestTypeForShirt( PlayerTypePtrCont & candidates,
+                                const int unum );
+    std::string typePosition( const int type ) const;
 
     void sayPlayerTypes();
 

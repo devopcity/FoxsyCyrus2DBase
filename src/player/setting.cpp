@@ -162,6 +162,39 @@ void Setting::load_from_json_string(const string &json_str, const string &encodi
                 player_type_ids_str += "]";
                 log(player_type_ids_str + "\n");
             }
+            // FoxLeague: positions for like-for-like substitutions (sample_coach.cpp).
+            // The players parse this same -j and any throw here ends the process, so
+            // a bad value must NOT throw: the whole team would not play. Both keys are
+            // then ignored (logged), and the coach substitutes as it did before them.
+            const vector<string> position_options = {"GK", "DEF", "MID", "FWD"};
+            auto read_positions = [&](const char * key, size_t size, vector<string> & out) -> bool {
+                if (!j.contains(key))
+                    return true;
+                const json & value = j.at(key);
+                if (!value.is_array() || value.size() != size) {
+                    log(std::string(key) + " must be an array of " + std::to_string(size) + " positions\n");
+                    return false;
+                }
+                vector<string> v;
+                for (const json & p : value) {
+                    if (!p.is_string()
+                        || std::find(position_options.begin(), position_options.end(), p.get<string>()) == position_options.end()) {
+                        log(std::string(key) + ": unknown position " + p.dump() + "\n");
+                        return false;
+                    }
+                    v.push_back(p.get<string>());
+                }
+                out = v;
+                return true;
+            };
+            const bool positions_ok = read_positions("type_positions", 18, type_positions)
+                && read_positions("shirt_positions", 11, shirt_positions);
+            if (!positions_ok || type_positions.empty() != shirt_positions.empty()) {
+                log("type_positions/shirt_positions IGNORED (both are needed, each valid): "
+                    "substitutions ignore positions\n");
+                type_positions.clear();
+                shirt_positions.clear();
+            }
             // check if json contains unsupported keys
             for (auto& el : j.items()) {
                 std::string key = el.key();
@@ -179,7 +212,9 @@ void Setting::load_from_json_string(const string &json_str, const string &encodi
                     key != "pressing" &&
                     key != "offside_trap" &&
                     key != "aggressiveness" &&
-                    key != "player_type_ids") {
+                    key != "player_type_ids" &&
+                    key != "type_positions" &&
+                    key != "shirt_positions") {
                     log("Unsupported key in json: " + key + "\n");
                     throw std::invalid_argument("Unsupported key in json: " + key);
                 }
