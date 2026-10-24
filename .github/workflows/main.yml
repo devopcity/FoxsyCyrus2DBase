@@ -1,7 +1,14 @@
 name: Build and Release
 
 on:
+  # FoxLeague: the release tag is given, not "latest tag + 1" (that would collide with the
+  # upstream numbering this fork inherited), and the tag is created on the commit that was
+  # built (github.sha), not on the default branch.
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to create (e.g. foxleague-564-1)"
+        required: true
   # push:
   #   branches:
   #     - cyrus2d
@@ -47,21 +54,6 @@ jobs:
           chmod 777 cyrus/* -R
           zip -r cyrus.zip cyrus
           mv cyrus.zip ../
-      - name: Get latest tag
-        id: get_latest_tag
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const latestTag = await github.rest.repos.listTags({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              per_page: 1,
-              page: 1
-            });
-            const latestTagName = latestTag.data.length > 0 ? latestTag.data[0].name : "0";
-            const newTag = (parseInt(latestTagName, 10) + 1).toString();
-            core.setOutput('new_tag', newTag);
       # ------------------------------------------- Release
       - name: Create Release
         id: create_release
@@ -69,8 +61,9 @@ jobs:
         with:
           artifacts: "${{ github.workspace }}/cyrus.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.get_latest_tag.outputs.new_tag }}
-          release_name: ${{ steps.get_latest_tag.outputs.new_tag }}
-          release_body: "FOXSY CYRUS BASE"
+          tag: ${{ inputs.tag }}
+          commit: ${{ github.sha }}
+          name: ${{ inputs.tag }}
+          body: "FOXSY CYRUS BASE, FoxLeague build: like-for-like substitutions (#564). Built from ${{ github.sha }}."
           draft: false
           prerelease: false
