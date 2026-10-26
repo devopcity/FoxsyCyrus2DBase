@@ -58,7 +58,8 @@ public:
     vector<string> type_positions;
     vector<string> shirt_positions;
     // FoxLeague: when tired players may first be substituted, as a percentage of the last
-    // normal half (0 = from its kickoff, 100 = never). -1 = not set: the stock window,
+    // normal half (0 = from its first cycle of play, never during the half-time break; 100 =
+    // never, extra time included). -1 = not set: the stock window,
     // the last 500 cycles of normal time. A percentage, not a cycle, because the half's
     // length is the server's (prod 3000 cycles, dev matches 300).
     int subs_from_second_half_pct = -1;
