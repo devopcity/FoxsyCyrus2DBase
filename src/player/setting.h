@@ -57,6 +57,11 @@ public:
     // before (fastest bench type, any shirt).
     vector<string> type_positions;
     vector<string> shirt_positions;
+    // FoxLeague: when tired players may first be substituted, as a percentage of the last
+    // normal half (0 = from its kickoff, 100 = never). -1 = not set: the stock window,
+    // the last 500 cycles of normal time. A percentage, not a cycle, because the half's
+    // length is the server's (prod 3000 cycles, dev matches 300).
+    int subs_from_second_half_pct = -1;
 
     void find_version(const string &json_string);
 

@@ -195,6 +195,18 @@ void Setting::load_from_json_string(const string &json_str, const string &encodi
                 type_positions.clear();
                 shirt_positions.clear();
             }
+            // FoxLeague: the substitution window (sample_coach.cpp doSubstituteTiredPlayers).
+            // Same rule as the positions: a bad value is logged and ignored, never a throw.
+            if (j.contains("subs_from_second_half_pct")) {
+                const json & value = j.at("subs_from_second_half_pct");
+                if (value.is_number_integer() && value.get<int>() >= 0 && value.get<int>() <= 100) {
+                    subs_from_second_half_pct = value.get<int>();
+                    log("subs_from_second_half_pct: " + std::to_string(subs_from_second_half_pct) + "\n");
+                } else {
+                    log("subs_from_second_half_pct IGNORED (an integer 0..100 is needed): "
+                        + value.dump() + "\n");
+                }
+            }
             // FoxLeague: an unknown key is logged and IGNORED, never a throw. The eleven
             // players and the coach parse the same -j, so one throw ended every process of the
             // team and the match was lost by forfeit; and a backend that learns a new key
@@ -218,7 +230,8 @@ void Setting::load_from_json_string(const string &json_str, const string &encodi
                     key != "aggressiveness" &&
                     key != "player_type_ids" &&
                     key != "type_positions" &&
-                    key != "shirt_positions") {
+                    key != "shirt_positions" &&
+                    key != "subs_from_second_half_pct") {
                     log("Unsupported key in json IGNORED: " + key + "\n");
                 }
             }

@@ -520,8 +520,16 @@ SampleCoach::doSubstituteTiredPlayers()
     //
     const int half_time = SP.actualHalfTime();
     const int normal_time = half_time * SP.nrNormalHalfs();
+    // FoxLeague: the window opens at subs_from_second_half_pct of the last normal half when
+    // the team config sets it (Admin "match.subs_from_second_half_pct"); else the stock
+    // last 500 cycles. The server restores every player's stamina at the second half's
+    // kickoff, so a substitution at half time would replace nobody tired.
+    const int pct = Setting::i().subs_from_second_half_pct;
+    const int subs_from = pct >= 0
+        ? normal_time - half_time + half_time * pct / 100
+        : normal_time - 500;
 
-    if ( world().time().cycle() < normal_time - 500
+    if ( world().time().cycle() < subs_from
          //|| world().time().cycle() <= half_time + 1
          //|| world().gameMode().type() == GameMode::KickOff_
          )
