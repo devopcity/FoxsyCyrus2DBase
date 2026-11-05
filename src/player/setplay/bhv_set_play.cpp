@@ -197,6 +197,20 @@ Bhv_SetPlay::get_set_play_dash_power( const PlayerAgent * agent )
 #if 1
     const WorldModel & wm = agent->world();
 
+    // FoxLeague: a penalty taker runs to the ball at full safe power.
+    // librcsc isTeamsSetPlay() is false for every penalty mode, so without this the taker's
+    // approach (Bhv_PenaltyKick::doKickerSetup -> Bhv_GoToPlacedBall) took the stamina-saving
+    // branch below: staminaIncMax * recovery * rate. After 120 minutes recovery is at
+    // recover_min (0.5), which gives a dash of about 33 (or about 5 below 80% stamina). The
+    // first taker starts where he stood at the final whistle, up to ~28 m away, and did not
+    // reach the ball within setup + ready, so rcssserver called penalty_miss with no kick
+    // (mainnet: 82 of 204 first kicks). This restores the agent2d rule kept in the #else
+    // branch below (PenaltySetup -> getSafetyDashPower), for every penalty mode.
+    if ( wm.gameMode().isPenaltyKickMode() )
+    {
+        return wm.self().getSafetyDashPower( ServerParam::i().maxDashPower() );
+    }
+
     if ( ! wm.gameMode().isOurSetPlay( wm.ourSide() ) )
     {
         Vector2D target_point = Strategy::i().getPosition( wm.self().unum() );
