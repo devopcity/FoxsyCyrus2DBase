@@ -68,6 +68,6 @@ jobs:
           tag: ${{ inputs.tag }}
           commit: ${{ github.sha }}
           name: ${{ inputs.tag }}
-          body: "FOXSY CYRUS BASE, FoxLeague build: like-for-like substitutions (#564). Built from ${{ github.sha }}."
+          body: "FOXSY CYRUS BASE, FoxLeague build: like-for-like substitutions (#564), the penalty taker runs to the ball at full safe power. Built from ${{ github.sha }} (branch ${{ github.ref_name }})."
           draft: false
           prerelease: false
